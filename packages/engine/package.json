@@ -1,0 +1,15 @@
+{
+  "name": "@baez/engine",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"no engine code yet — real money-math tests arrive with M1, see CLAUDE.md\""
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

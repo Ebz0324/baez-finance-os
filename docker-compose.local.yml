@@ -1,0 +1,26 @@
+# Local-only overlay: `pnpm compose:local` merges this over docker-compose.yml
+# so the full container stack (app + Caddy + Litestream) runs on your machine
+# with no VPS, domain, or R2 account. Deliberately named .local.yml, not
+# .override.yml — Compose only auto-merges a file literally named
+# docker-compose.override.yml, so this file is inert unless explicitly passed
+# with -f, and can never accidentally apply on the VPS.
+#
+# Caddy auto-detects "localhost" and issues its own internal (self-signed)
+# cert instead of requesting one from Let's Encrypt — click through the
+# browser's certificate warning, that's expected for local testing.
+services:
+  app:
+    environment:
+      RP_ID: localhost
+      ORIGIN: https://localhost
+
+  caddy:
+    environment:
+      DOMAIN: localhost
+
+  # No R2 account for local testing — replace the real replicate command with
+  # one that starts, prints its version, and exits (restart: "no" means it
+  # then stays stopped rather than crash-looping on missing credentials).
+  litestream:
+    restart: "no"
+    command: ["version"]

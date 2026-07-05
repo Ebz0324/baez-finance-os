@@ -1,0 +1,19 @@
+{
+  "name": "baez-finance-os",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev:server": "pnpm --filter @baez/server dev",
+    "dev:app": "pnpm --filter @baez/app dev",
+    "build": "pnpm --filter @baez/app build && pnpm --filter @baez/server build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "seed": "pnpm --filter @baez/server seed",
+    "compose:local": "docker compose -f docker-compose.yml -f docker-compose.local.yml up --build",
+    "compose:local:down": "docker compose -f docker-compose.yml -f docker-compose.local.yml down"
+  }
+}
