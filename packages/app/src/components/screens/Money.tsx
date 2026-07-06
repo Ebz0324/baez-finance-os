@@ -1,18 +1,30 @@
 import { useState } from "react";
 import { useScope } from "../../lib/scope";
-import { useAccounts, useDeleteAccount, type Account } from "../../lib/queries";
+import {
+  useAccounts,
+  useCategorize,
+  useDeleteAccount,
+  useTransactions,
+  type Account,
+  type Transaction,
+} from "../../lib/queries";
 import { formatMinorString } from "../../lib/format";
 import { RecordCard } from "../RecordCard";
 import { ScopeSwitcher } from "../ScopeSwitcher";
 import { AccountForm } from "../sheets/AccountForm";
+import { CategoryPicker } from "../sheets/CategoryPicker";
 
 export function Money() {
   const { scope } = useScope();
   const accountsQuery = useAccounts(scope);
+  const transactionsQuery = useTransactions(scope);
   const deleteAccount = useDeleteAccount();
+  const categorize = useCategorize();
   const [showForm, setShowForm] = useState(false);
+  const [categorizing, setCategorizing] = useState<Transaction | null>(null);
 
   const accounts = accountsQuery.data ?? [];
+  const transactions = transactionsQuery.data ?? [];
 
   return (
     <div className="px-4 pb-24">
@@ -58,7 +70,36 @@ export function Money() {
         </div>
       )}
 
+      {transactions.length > 0 && (
+        <>
+          <h2 className="mt-8 text-lg font-medium">Recent activity</h2>
+          <div className="mt-3 flex flex-col gap-2">
+            {transactions.map((t) => (
+              <RecordCard
+                key={t.id}
+                title={t.merchantRaw ?? t.categoryName ?? "uncategorized"}
+                subtitle={`${t.postedOn} · ${t.accountName}${
+                  t.categoryName ? ` · ${t.categoryName}` : ""
+                }`}
+                value={formatMinorString(t.amountMinor, t.currency)}
+                onClick={() => setCategorizing(t)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
       {showForm && <AccountForm onClose={() => setShowForm(false)} />}
+      {categorizing && (
+        <CategoryPicker
+          kind={BigInt(categorizing.amountMinor) < 0n ? "expense" : "income"}
+          onPick={(picked) => {
+            categorize.mutate({ id: categorizing.id, categoryId: picked.id });
+            setCategorizing(null);
+          }}
+          onClose={() => setCategorizing(null)}
+        />
+      )}
     </div>
   );
 }

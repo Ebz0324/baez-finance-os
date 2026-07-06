@@ -64,3 +64,66 @@ export function useUpdateMe() {
       apiPatch<{ ok: true }>("/me", body),
   });
 }
+
+export type Transaction = {
+  id: string;
+  accountId: string;
+  categoryId: string | null;
+  postedOn: string;
+  amountMinor: string;
+  currency: "USD" | "DOP";
+  merchantRaw: string | null;
+  catSource: "rule" | "ai" | "user" | null;
+  accountName: string;
+  categoryName: string | null;
+  /** Client-only: true while the row is still waiting in the offline outbox. */
+  pending?: boolean;
+};
+
+export function useTransactions(scope: Scope) {
+  return useQuery({
+    queryKey: ["transactions", scope],
+    queryFn: () =>
+      apiGet<{ transactions: Transaction[]; nextCursor: string | null }>(
+        `/transactions?scope=${scope}&limit=30`,
+      ),
+    select: (data) => data.transactions,
+  });
+}
+
+export type Category = {
+  id: string;
+  parentId: string | null;
+  name: string;
+  kind: "expense" | "income" | "transfer";
+};
+
+export function useCategories() {
+  return useQuery({
+    queryKey: ["categories"],
+    queryFn: () => apiGet<{ categories: Category[] }>("/categories"),
+    select: (data) => data.categories,
+    staleTime: 60 * 60 * 1000, // the tree changes rarely
+  });
+}
+
+export function useFrequentCategories() {
+  return useQuery({
+    queryKey: ["categories", "frequent"],
+    queryFn: () =>
+      apiGet<{ categories: Array<Pick<Category, "id" | "name" | "kind">> }>("/categories/frequent"),
+    select: (data) => data.categories,
+  });
+}
+
+export function useCategorize() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, categoryId }: { id: string; categoryId: string }) =>
+      apiPatch<{ ok: true }>(`/transactions/${id}`, { categoryId }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["transactions"] });
+      qc.invalidateQueries({ queryKey: ["categories", "frequent"] });
+    },
+  });
+}

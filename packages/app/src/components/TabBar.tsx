@@ -22,10 +22,8 @@ export function TabBar({ active, onChange, onAdd }: TabBarProps) {
       <button
         type="button"
         onClick={onAdd}
-        disabled
-        aria-disabled
-        title="Quick add arrives in M1"
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-2xl text-zinc-500"
+        aria-label="Add"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-2xl text-zinc-900"
       >
         +
       </button>
