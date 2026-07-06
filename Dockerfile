@@ -27,6 +27,7 @@ COPY --from=build /repo/packages/engine/src ./packages/engine/src
 COPY --from=build /repo/packages/server/package.json ./packages/server/package.json
 COPY --from=build /repo/packages/server/node_modules ./packages/server/node_modules
 COPY --from=build /repo/packages/server/dist ./packages/server/dist
+COPY --from=build /repo/packages/server/drizzle ./packages/server/drizzle
 COPY --from=build /repo/packages/app/dist ./packages/server/public
 
 WORKDIR /repo/packages/server

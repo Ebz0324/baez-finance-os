@@ -14,12 +14,12 @@ import {
 import {
   generateSessionToken,
   createSession,
-  validateSessionToken,
   invalidateSession,
   setSessionCookie,
   clearSessionCookie,
   getSessionToken,
 } from "../auth/session.js";
+import { requireAuth } from "../auth/middleware.js";
 
 function publicUser(u: { id: string; name: string; role: string }) {
   return { id: u.id, name: u.name, role: u.role };
@@ -154,12 +154,17 @@ export function authRoutes(db: Db) {
     return c.json({ ok: true });
   });
 
-  app.get("/me", async (c) => {
-    const token = getSessionToken(c);
-    if (!token) return c.json({ error: "unauthenticated" }, 401);
-    const row = validateSessionToken(db, token);
-    if (!row) return c.json({ error: "unauthenticated" }, 401);
-    return c.json({ user: publicUser(row.user) });
+  app.get("/me", requireAuth(db), async (c) => {
+    const user = c.var.user;
+    return c.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        defaultScope: user.defaultScope,
+        quickAddCurrency: user.quickAddCurrency,
+      },
+    });
   });
 
   return app;

@@ -4,13 +4,14 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "./config.js";
-import { openDb, ensureSchema } from "./db/client.js";
+import { openDb } from "./db/client.js";
+import { runMigrations } from "./db/migrate.js";
 import { seed } from "./db/seed.js";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
 
 const db = openDb();
-ensureSchema(db);
+runMigrations(db);
 seed(db); // idempotent — safe to run on every boot
 
 const app = new Hono();
