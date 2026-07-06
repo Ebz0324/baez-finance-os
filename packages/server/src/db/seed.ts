@@ -33,8 +33,3 @@ export function seed(db: ReturnType<typeof openDb>) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const db = openDb();
-  seed(db);
-  console.log("Seeded household + Eimer (operator) + Ashley (partner).");
-}
