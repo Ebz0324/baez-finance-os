@@ -13,6 +13,7 @@ import { RecordCard } from "../RecordCard";
 import { ScopeSwitcher } from "../ScopeSwitcher";
 import { AccountForm } from "../sheets/AccountForm";
 import { CategoryPicker } from "../sheets/CategoryPicker";
+import { ImportStatement } from "../modes/ImportStatement";
 
 export function Money() {
   const { scope } = useScope();
@@ -22,6 +23,7 @@ export function Money() {
   const categorize = useCategorize();
   const [showForm, setShowForm] = useState(false);
   const [categorizing, setCategorizing] = useState<Transaction | null>(null);
+  const [importing, setImporting] = useState<Account | null>(null);
 
   const accounts = accountsQuery.data ?? [];
   const transactions = transactionsQuery.data ?? [];
@@ -57,6 +59,7 @@ export function Money() {
             <AccountCard
               key={account.id}
               account={account}
+              onImport={() => setImporting(account)}
               onDelete={() => deleteAccount.mutate(account.id)}
             />
           ))}
@@ -90,6 +93,7 @@ export function Money() {
       )}
 
       {showForm && <AccountForm onClose={() => setShowForm(false)} />}
+      {importing && <ImportStatement account={importing} onClose={() => setImporting(null)} />}
       {categorizing && (
         <CategoryPicker
           kind={BigInt(categorizing.amountMinor) < 0n ? "expense" : "income"}
@@ -104,7 +108,15 @@ export function Money() {
   );
 }
 
-function AccountCard({ account, onDelete }: { account: Account; onDelete: () => void }) {
+function AccountCard({
+  account,
+  onImport,
+  onDelete,
+}: {
+  account: Account;
+  onImport: () => void;
+  onDelete: () => void;
+}) {
   return (
     <RecordCard
       title={account.name}
@@ -112,7 +124,10 @@ function AccountCard({ account, onDelete }: { account: Account; onDelete: () => 
         account.lastActivityOn ? ` · data through ${account.lastActivityOn}` : ""
       }`}
       value={formatMinorString(account.balanceMinor, account.currency)}
-      overflowActions={[{ label: "Delete account", onSelect: onDelete }]}
+      overflowActions={[
+        { label: "Import a statement", onSelect: onImport },
+        { label: "Delete account", onSelect: onDelete },
+      ]}
     />
   );
 }

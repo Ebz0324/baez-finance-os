@@ -13,6 +13,9 @@ import { accountsRoutes } from "./routes/accounts.js";
 import { meRoutes } from "./routes/me.js";
 import { transactionsRoutes } from "./routes/transactions.js";
 import { categoriesRoutes } from "./routes/categories.js";
+import { importsRoutes } from "./routes/imports.js";
+import { fxRoutes } from "./routes/fx.js";
+import { safeToSpendRoutes } from "./routes/safe-to-spend.js";
 
 const db = openDb();
 runMigrations(db);
@@ -26,6 +29,9 @@ app.route("/api/accounts", accountsRoutes(db));
 app.route("/api/me", meRoutes(db));
 app.route("/api/transactions", transactionsRoutes(db));
 app.route("/api/categories", categoriesRoutes(db));
+app.route("/api/imports", importsRoutes(db));
+app.route("/api/fx", fxRoutes(db));
+app.route("/api/safe-to-spend", safeToSpendRoutes(db));
 
 // In production the built PWA is copied alongside this server (see Dockerfile)
 // and served from the same origin/container — no separate static host, no CORS.

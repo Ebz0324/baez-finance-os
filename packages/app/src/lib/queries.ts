@@ -22,6 +22,7 @@ export type Account = {
   currency: "USD" | "DOP";
   scope: Scope;
   ownerId: string;
+  csvMapping: string | null;
   balanceMinor: string;
   lastActivityOn: string | null;
 };
@@ -46,7 +47,10 @@ export function useCreateAccount() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: NewAccount) => apiPost<{ id: string }>("/accounts", body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["accounts"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["safe-to-spend"] });
+    },
   });
 }
 
@@ -54,7 +58,10 @@ export function useDeleteAccount() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiDelete<{ ok: true }>(`/accounts/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["accounts"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["safe-to-spend"] });
+    },
   });
 }
 
@@ -124,6 +131,42 @@ export function useCategorize() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["transactions"] });
       qc.invalidateQueries({ queryKey: ["categories", "frequent"] });
+    },
+  });
+}
+
+export type SafeToSpend = {
+  availableMinor: string;
+  baseCurrency: "USD" | "DOP";
+  accountCount: number;
+  dataThrough: string | null;
+  needsRate: boolean;
+  excludedAccounts: Array<{ id: string; name: string; currency: "USD" | "DOP" }>;
+};
+
+export function useSafeToSpend(scope: Scope) {
+  return useQuery({
+    queryKey: ["safe-to-spend", scope],
+    queryFn: () => apiGet<SafeToSpend>(`/safe-to-spend?scope=${scope}`),
+  });
+}
+
+export type FxRate = { rate: string | null; rateDate: string | null; source: string | null };
+
+export function useFxRate() {
+  return useQuery({
+    queryKey: ["fx-rate"],
+    queryFn: () => apiGet<FxRate>("/fx/rate"),
+  });
+}
+
+export function useSetFxRate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (rate: string) => apiPost<{ ok: true }>("/fx/rate", { rate }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["fx-rate"] });
+      qc.invalidateQueries({ queryKey: ["safe-to-spend"] });
     },
   });
 }

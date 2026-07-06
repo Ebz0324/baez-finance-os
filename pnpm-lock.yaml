@@ -10,6 +10,9 @@ importers:
 
   packages/app:
     dependencies:
+      '@baez/engine':
+        specifier: workspace:*
+        version: link:../engine
       '@simplewebauthn/browser':
         specifier: ^13.1.0
         version: 13.3.0

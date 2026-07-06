@@ -5,7 +5,7 @@ type PlusMenuProps = {
 
 /**
  * The global + (DESIGN §3): opens the designed option menu. "Can we
- * afford…?" joins in M4; upload statement activates with CSV import.
+ * afford…?" joins in M4.
  */
 export function PlusMenu({ onPick, onClose }: PlusMenuProps) {
   const OPTIONS: Array<{
@@ -16,12 +16,7 @@ export function PlusMenu({ onPick, onClose }: PlusMenuProps) {
   }> = [
     { id: "cash-expense", label: "Cash expense", hint: "spent something" },
     { id: "income", label: "Income received", hint: "money came in" },
-    {
-      id: "upload-statement",
-      label: "Upload statement",
-      hint: "arrives with CSV import",
-      disabled: true,
-    },
+    { id: "upload-statement", label: "Upload statement", hint: "CSV import" },
   ];
 
   return (

@@ -53,6 +53,7 @@ export function QuickAdd({ user, initialDirection, onClose }: QuickAddProps) {
     // Surface immediately even offline; server truth reconciles on flush.
     qc.invalidateQueries({ queryKey: ["transactions"] });
     qc.invalidateQueries({ queryKey: ["accounts"] });
+    qc.invalidateQueries({ queryKey: ["safe-to-spend"] });
     setSaved(true);
     setTimeout(onClose, 600); // brief confirmation → close
   }

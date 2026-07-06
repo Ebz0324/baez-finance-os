@@ -9,12 +9,17 @@ import { Money } from "./components/screens/Money";
 import { Stub } from "./components/screens/Stub";
 import { Login } from "./components/screens/Login";
 import { QuickAdd } from "./components/sheets/QuickAdd";
+import { AccountPicker } from "./components/sheets/AccountPicker";
+import { ImportStatement } from "./components/modes/ImportStatement";
+import type { Account } from "./lib/queries";
 
 export function App() {
   const [user, setUser] = useState<User | null | "loading">("loading");
   const [tab, setTab] = useState<Tab>("home");
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [quickAdd, setQuickAdd] = useState<"expense" | "income" | null>(null);
+  const [pickingImportAccount, setPickingImportAccount] = useState(false);
+  const [importingAccount, setImportingAccount] = useState<Account | null>(null);
 
   useEffect(() => {
     getMe().then(setUser);
@@ -51,6 +56,7 @@ export function App() {
               setShowPlusMenu(false);
               if (action === "cash-expense") setQuickAdd("expense");
               if (action === "income") setQuickAdd("income");
+              if (action === "upload-statement") setPickingImportAccount(true);
             }}
             onClose={() => setShowPlusMenu(false)}
           />
@@ -58,6 +64,20 @@ export function App() {
 
         {quickAdd && (
           <QuickAdd user={user} initialDirection={quickAdd} onClose={() => setQuickAdd(null)} />
+        )}
+
+        {pickingImportAccount && (
+          <AccountPicker
+            onPick={(account) => {
+              setPickingImportAccount(false);
+              setImportingAccount(account);
+            }}
+            onClose={() => setPickingImportAccount(false)}
+          />
+        )}
+
+        {importingAccount && (
+          <ImportStatement account={importingAccount} onClose={() => setImportingAccount(null)} />
         )}
       </div>
     </ScopeProvider>

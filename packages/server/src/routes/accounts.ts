@@ -13,13 +13,13 @@ import {
   toBigIntStrict,
 } from "../lib/wire.js";
 
-type Scope = "me" | "partner" | "household";
+export type Scope = "me" | "partner" | "household";
 
 /**
  * Scope filter (design decision D4): household = ALL accounts;
  * me = viewer's personal accounts; partner = the other member's personal.
  */
-function scopeCondition(scope: Scope, viewerId: string) {
+export function scopeCondition(scope: Scope, viewerId: string) {
   switch (scope) {
     case "household":
       return undefined;
@@ -49,6 +49,7 @@ export function accountsRoutes(db: Db) {
         currency: accounts.currency,
         scope: accounts.scope,
         ownerId: accounts.ownerId,
+        csvMapping: accounts.csvMapping,
         balance: sum(transactions.amountMinor),
         lastActivityOn: max(transactions.postedOn),
       })
@@ -66,6 +67,7 @@ export function accountsRoutes(db: Db) {
         currency: r.currency,
         scope: r.scope,
         ownerId: r.ownerId,
+        csvMapping: r.csvMapping,
         balanceMinor: toBigIntStrict(
           r.balance === null ? 0n : BigInt(r.balance),
           `balance of ${r.id}`,
