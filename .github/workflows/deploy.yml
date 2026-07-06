@@ -20,4 +20,5 @@ jobs:
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
             git pull origin main
-            docker compose up -d --build
+            docker rm -f 649e3afe3f3d_app-app-1 2>/dev/null || true
+            docker compose up -d --build --remove-orphans
