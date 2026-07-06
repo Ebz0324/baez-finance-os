@@ -9,6 +9,8 @@ import { runMigrations } from "./db/migrate.js";
 import { seed } from "./db/seed.js";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
+import { accountsRoutes } from "./routes/accounts.js";
+import { meRoutes } from "./routes/me.js";
 
 const db = openDb();
 runMigrations(db);
@@ -18,6 +20,8 @@ const app = new Hono();
 
 app.route("/api/health", healthRoutes);
 app.route("/api/auth", authRoutes(db));
+app.route("/api/accounts", accountsRoutes(db));
+app.route("/api/me", meRoutes(db));
 
 // In production the built PWA is copied alongside this server (see Dockerfile)
 // and served from the same origin/container — no separate static host, no CORS.

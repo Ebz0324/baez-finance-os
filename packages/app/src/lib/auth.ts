@@ -1,42 +1,48 @@
 import { startRegistration, startAuthentication } from "@simplewebauthn/browser";
+import { apiGet, apiPost } from "./api";
 
-export type User = { id: string; name: string; role: "operator" | "partner" };
+export type Scope = "me" | "partner" | "household";
 
-async function api<T>(path: string, body?: unknown): Promise<T> {
-  const init: RequestInit = { method: "POST", credentials: "include" };
-  if (body !== undefined) {
-    init.headers = { "content-type": "application/json" };
-    init.body = JSON.stringify(body);
-  }
-  const res = await fetch(`/api${path}`, init);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? `request failed: ${res.status}`);
-  return data as T;
-}
+export type User = {
+  id: string;
+  name: string;
+  role: "operator" | "partner";
+  defaultScope: Scope;
+  quickAddCurrency: "USD" | "DOP" | null;
+};
 
 export async function getMe(): Promise<User | null> {
-  const res = await fetch("/api/auth/me", { credentials: "include" });
-  if (!res.ok) return null;
-  const { user } = await res.json();
-  return user;
+  try {
+    const { user } = await apiGet<{ user: User }>("/auth/me");
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 export async function setupPasskey(name: string): Promise<User> {
-  const options = await api<PublicKeyCredentialCreationOptionsJSON>("/auth/setup/options", { name });
+  const options = await apiPost<PublicKeyCredentialCreationOptionsJSON>("/auth/setup/options", {
+    name,
+  });
   const response = await startRegistration({ optionsJSON: options });
-  const { user } = await api<{ user: User }>("/auth/setup/verify", { response });
+  await apiPost("/auth/setup/verify", { response });
+  // Re-fetch through /me so the client always gets the full preference shape.
+  const user = await getMe();
+  if (!user) throw new Error("setup succeeded but session is missing");
   return user;
 }
 
 export async function loginWithPasskey(): Promise<User> {
-  const options = await api<PublicKeyCredentialRequestOptionsJSON>("/auth/login/options");
+  const options = await apiPost<PublicKeyCredentialRequestOptionsJSON>("/auth/login/options");
   const response = await startAuthentication({ optionsJSON: options });
-  const { user } = await api<{ user: User }>("/auth/login/verify", { response });
+  await apiPost("/auth/login/verify", { response });
+  const user = await getMe();
+  if (!user) throw new Error("login succeeded but session is missing");
   return user;
 }
 
 export async function logout(): Promise<void> {
-  await api("/auth/logout");
+  await apiPost("/auth/logout");
 }
 
 // Minimal structural types so this file doesn't need @simplewebauthn/server's

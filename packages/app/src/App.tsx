@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getMe, logout, type User } from "./lib/auth";
+import { ScopeProvider } from "./lib/scope";
 import { TabBar, type Tab } from "./components/TabBar";
 import { Home } from "./components/screens/Home";
+import { Money } from "./components/screens/Money";
 import { Stub } from "./components/screens/Stub";
 import { Login } from "./components/screens/Login";
 
@@ -17,21 +19,23 @@ export function App() {
   if (!user) return <Login onAuthed={setUser} />;
 
   return (
-    <div className="min-h-full pb-20">
-      {tab === "home" && <Home user={user} />}
-      {tab === "money" && <Stub title="Money" arrives="M1" />}
-      {tab === "goals" && <Stub title="Goals" arrives="M4" />}
-      {tab === "household" && <Stub title="Household" arrives="M4" />}
+    <ScopeProvider user={user}>
+      <div className="min-h-full pb-20">
+        {tab === "home" && <Home user={user} />}
+        {tab === "money" && <Money />}
+        {tab === "goals" && <Stub title="Goals" arrives="M4" />}
+        {tab === "household" && <Stub title="Household" arrives="M4" />}
 
-      <button
-        type="button"
-        onClick={() => logout().then(() => setUser(null))}
-        className="fixed right-4 top-4 text-xs text-zinc-500"
-      >
-        Log out
-      </button>
+        <button
+          type="button"
+          onClick={() => logout().then(() => setUser(null))}
+          className="fixed right-4 top-4 text-xs text-zinc-500"
+        >
+          Log out
+        </button>
 
-      <TabBar active={tab} onChange={setTab} onAdd={() => {}} />
-    </div>
+        <TabBar active={tab} onChange={setTab} onAdd={() => {}} />
+      </div>
+    </ScopeProvider>
   );
 }
